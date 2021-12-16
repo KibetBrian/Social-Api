@@ -9,7 +9,8 @@ const UserSchema = new mongoose_1.Schema({
     },
     email: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     bio: {
         type: String
@@ -19,6 +20,9 @@ const UserSchema = new mongoose_1.Schema({
         required: true
     },
     profilePicture: {
+        type: String
+    },
+    coverPicture: {
         type: String
     },
     following: {

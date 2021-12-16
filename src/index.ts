@@ -1,8 +1,9 @@
-import express, { Application, Request, Response, Router } from 'express';
+import express ,{  Application, Request, Response, Router } from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import userRoute from './Routes/user';
-const app = express();
+import postRoute from './Routes/post';
+const app:Application = express();
 app.use(express.json());
 dotenv.config();
 const routes = Router();
@@ -25,6 +26,7 @@ try {
 
 //Routes
 routes.use("/user/", userRoute);
+routes.use("/post/", postRoute);
 
 
 app.get("/", (req: Request, res: Response): void => {

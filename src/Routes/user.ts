@@ -1,8 +1,8 @@
-import { Router, Request, Response, NextFunction } from "express";
-import jwt, { sign } from 'jsonwebtoken';
+import { Router, Request, Response} from "express";
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken'
+import { verifyToken } from "../middlewares";
 import { User } from "../models/user";
-import { nextTick } from "process";
 const userRoute = Router();
 
 //Register new user
@@ -41,7 +41,7 @@ userRoute.post('/login', async (req: Request, res: Response) => {
                 userName: user?.userName,
                 email: user?.email
             }
-            const accessToken = jwt.sign(jwt_obj, process.env.JWT_SECRET_KEY as string);
+            const accessToken = jwt.sign(jwt_obj, process.env.JWT_SECRET_KEY as string, { expiresIn: '3days' });
             res.status(200).json(accessToken);
         }
     } catch (err) {
@@ -50,10 +50,33 @@ userRoute.post('/login', async (req: Request, res: Response) => {
 
 });
 
+//Update user
+userRoute.put('/update', verifyToken, async (req: Request, res: Response) => {
+    const userObj = req.body.user;
+    const { user, ...rest } = req.body;
+    try {
+        const user = await User.findOneAndUpdate({ _id: userObj._id }, rest, { new: true });
+        res.status(200).json(user);
+    }
+    catch (err) {
+        res.status(500).json('Error');
+    }
+});
+
+//Delete user
+userRoute.delete('/delete', verifyToken, async (req: Request, res: Response) => {
+    const userObj = req.body.user;
+    try {
+        const deleted = await User.findByIdAndDelete(userObj._id);
+        res.status(200).json(deleted);
+    } catch (err) {
+        res.status(500).json('Error');
+    }
+});
+
 //Find user
 userRoute.get('/find', async (req: Request, res: Response) => {
     const params = req.body.username;
-    console.log(params);
     const regex = new RegExp(params, 'i');
     try {
         const results = await User.find({ userName: { $regex: regex } });
@@ -64,5 +87,34 @@ userRoute.get('/find', async (req: Request, res: Response) => {
     }
 });
 
+//Follow a user
+userRoute.put('/follow', verifyToken, async (req: Request, res: Response) => {
+    const { user, ...rest } = req.body;
+    const toFollowId = rest.toFollowId;
+    const u = await User.findById(user._id);
+    let followed: boolean = false;
+
+    //Check in the following id user is already followed
+    for (let i = 0; i < u!.following.length; i++) {
+        if (u!.following[i] === toFollowId) {
+            followed = true;
+        }
+    }
+
+    try {
+        if (toFollowId !== user._id && !followed) {
+            await User.updateOne({ _id: user._id }, { $push: { following: toFollowId } });
+            res.status(200).json(`Followed ${toFollowId}`);
+        } else if (toFollowId == user._id) {
+            res.status(403).json('You cannot follow yourself')
+        } else {
+            res.status(403).json('User already followed');
+        }
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json('Err');
+    }
+})
 
 export default userRoute;

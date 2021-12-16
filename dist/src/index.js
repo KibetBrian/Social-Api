@@ -26,23 +26,23 @@ const express_1 = __importStar(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const user_1 = __importDefault(require("./Routes/user"));
+const post_1 = __importDefault(require("./Routes/post"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 dotenv_1.default.config();
 const routes = (0, express_1.Router)();
+app.use(routes);
 //Connect db
 try {
-    async function connectDb() {
-        await mongoose_1.default.connect(process.env.MONGO_URI);
-        console.log("Database Connected");
-    }
+    mongoose_1.default.connect(process.env.MONGO_URI);
 }
 catch (e) {
     console.log(e);
 }
 ;
 //Routes
-routes.use('/api/user/', user_1.default);
+routes.use("/user/", user_1.default);
+routes.use("/post/", post_1.default);
 app.get("/", (req, res) => {
     res.status(200).json("Test Successful!");
 });
