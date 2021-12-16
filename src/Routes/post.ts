@@ -68,6 +68,51 @@ postRoute.get('/find', async (req: Request, res: Response) => {
     }
 });
 
+//Add like 
+
+postRoute.put('/like', verifyToken, async (req: Request, res: Response)=>
+{
+    const {user, ...rest} = req.body;
+    const postId = rest.postId;
+    const userId = rest.userId;
+
+    try{
+        if(userId === user._id)
+        {
+            await Post.updateOne({_id: postId}, {$push: {likes: userId}});
+            res.status(200).json('Liked');
+        }else{
+            res.status(401).json("Unauthorized")
+        }
+    }
+    catch(err)
+    {
+        console.log(err);
+        res.status(500).json('Error')
+    }
+});
+
+//Comment a post
+postRoute.put('/comment', verifyToken, async (req: Request, res:Response)=>
+{
+    const {user, ...rest} = req.body;
+   
+    try
+    {
+        if(rest.userId === user._id)
+        {
+            await Post.updateOne({_id: rest.postId}, {$push: {comments: {userId: user._id, comment: rest.comment}}});
+            res.status(200).json('Comment posted')
+        }else{
+            res.status(401).json('Unauthorized');
+        }
+    }catch(err)
+    {
+        console.log(err);
+        res.status(500).json('Error');
+    }
+})
+
 //Get users timeline
 postRoute.get('/timeline', async (req: Request, res: Response) => {
 
@@ -85,7 +130,6 @@ postRoute.get('/timeline', async (req: Request, res: Response) => {
             timeLinePosts.push(eachUserPosts);
         }
     }
-    console.log(timeLinePosts);
 
     try {
         res.status(200).json(timeLinePosts);
@@ -94,6 +138,26 @@ postRoute.get('/timeline', async (req: Request, res: Response) => {
         res.status(500).json('Error');
     }
 });
+
+//Save a post
+postRoute.put('/save', verifyToken, async (req: Request, res: Response)=>
+{
+    const {user, ...rest} = req.body;
+    try{
+        if(user._id === rest.userId)
+        {
+            await User.updateOne({_id: user._id}, {$push: {savedPosts: rest.postId}});
+            res.status(201).json('Post saved');
+        }else{
+            res.status(401).json('Unauthorized');
+        }
+    }catch(err)
+    {
+        console.log(err);
+        res.status(500).json('Error');
+    }
+})
+
 
 
 export default postRoute;

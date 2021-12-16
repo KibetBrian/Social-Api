@@ -82,6 +82,42 @@ postRoute.get('/find', async (req, res) => {
         res.status(500).json('Error');
     }
 });
+//Add like 
+postRoute.put('/like', middlewares_1.verifyToken, async (req, res) => {
+    const _a = req.body, { user } = _a, rest = __rest(_a, ["user"]);
+    const postId = rest.postId;
+    const userId = rest.userId;
+    try {
+        if (userId === user._id) {
+            await post_1.Post.updateOne({ _id: postId }, { $push: { likes: userId } });
+            res.status(200).json('Liked');
+        }
+        else {
+            res.status(401).json("Unauthorized");
+        }
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json('Error');
+    }
+});
+//Comment a post
+postRoute.put('/comment', middlewares_1.verifyToken, async (req, res) => {
+    const _a = req.body, { user } = _a, rest = __rest(_a, ["user"]);
+    try {
+        if (rest.userId === user._id) {
+            await post_1.Post.updateOne({ _id: rest.postId }, { $push: { comments: { userId: user._id, comment: rest.comment } } });
+            res.status(200).json('Comment posted');
+        }
+        else {
+            res.status(401).json('Unauthorized');
+        }
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json('Error');
+    }
+});
 //Get users timeline
 postRoute.get('/timeline', async (req, res) => {
     const timeLinePosts = [];
@@ -105,5 +141,24 @@ postRoute.get('/timeline', async (req, res) => {
         console.log(err);
         res.status(500).json('Error');
     }
+});
+//Save a post
+postRoute.put('/save', middlewares_1.verifyToken, async (req, res) => {
+    const _a = req.body, { user } = _a, rest = __rest(_a, ["user"]);
+    const u = await post_1.Post.findById('61bb3wwwb28a4d0d2f760a59a40');
+    console.log('This is u', u);
+    // try{
+    //     if(user._id === rest.userId)
+    //     {
+    //         await User.updateOne({_id: user._id}, {$push: {savedPosts: rest.postId}});
+    //         res.status(201).json('Post saved');
+    //     }else{
+    //         res.status(401).json('Unauthorized');
+    //     }
+    // }catch(err)
+    // {
+    //     console.log(err);
+    //     res.status(500).json('Error');
+    // }
 });
 exports.default = postRoute;

@@ -30,6 +30,9 @@ const UserSchema = new mongoose_1.Schema({
     },
     followers: {
         type: Array
+    },
+    savedPosts: {
+        type: Array
     }
 }, { timestamps: true });
 exports.User = (0, mongoose_1.model)('user', UserSchema);

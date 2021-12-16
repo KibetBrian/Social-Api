@@ -46,6 +46,10 @@ const UserSchema: Schema = new Schema(
         followers:
         {
             type: Array
+        },
+        savedPosts:
+        {
+            type: Array
         }
 
 

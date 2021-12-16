@@ -7,14 +7,19 @@ exports.verifyToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const verifyToken = (req, res, next) => {
     const headers = req.headers.authorization;
-    const accessToken = headers === null || headers === void 0 ? void 0 : headers.split(' ')[1];
-    try {
-        const decoded = jsonwebtoken_1.default.verify(accessToken, process.env.JWT_SECRET_KEY);
-        req.body.user = decoded;
+    if (headers !== undefined) {
+        const accessToken = headers === null || headers === void 0 ? void 0 : headers.split(' ')[1];
+        try {
+            const decoded = jsonwebtoken_1.default.verify(accessToken, process.env.JWT_SECRET_KEY);
+            req.body.user = decoded;
+        }
+        catch (err) {
+            res.status(401).json('Unauthorized');
+        }
+        next();
     }
-    catch (err) {
-        res.status(401).json('Unauthorized');
+    else {
+        res.status(401).json('Bad request');
     }
-    next();
 };
 exports.verifyToken = verifyToken;
