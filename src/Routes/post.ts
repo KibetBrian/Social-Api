@@ -68,8 +68,7 @@ postRoute.get('/find', async (req: Request, res: Response) => {
     }
 });
 
-//Add like 
-
+//Add like
 postRoute.put('/like', verifyToken, async (req: Request, res: Response)=>
 {
     const {user, ...rest} = req.body;

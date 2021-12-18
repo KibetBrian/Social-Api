@@ -82,7 +82,7 @@ postRoute.get('/find', async (req, res) => {
         res.status(500).json('Error');
     }
 });
-//Add like 
+//Add like
 postRoute.put('/like', middlewares_1.verifyToken, async (req, res) => {
     const _a = req.body, { user } = _a, rest = __rest(_a, ["user"]);
     const postId = rest.postId;
@@ -133,7 +133,6 @@ postRoute.get('/timeline', async (req, res) => {
             timeLinePosts.push(eachUserPosts);
         }
     }
-    console.log(timeLinePosts);
     try {
         res.status(200).json(timeLinePosts);
     }
@@ -145,20 +144,18 @@ postRoute.get('/timeline', async (req, res) => {
 //Save a post
 postRoute.put('/save', middlewares_1.verifyToken, async (req, res) => {
     const _a = req.body, { user } = _a, rest = __rest(_a, ["user"]);
-    const u = await post_1.Post.findById('61bb3wwwb28a4d0d2f760a59a40');
-    console.log('This is u', u);
-    // try{
-    //     if(user._id === rest.userId)
-    //     {
-    //         await User.updateOne({_id: user._id}, {$push: {savedPosts: rest.postId}});
-    //         res.status(201).json('Post saved');
-    //     }else{
-    //         res.status(401).json('Unauthorized');
-    //     }
-    // }catch(err)
-    // {
-    //     console.log(err);
-    //     res.status(500).json('Error');
-    // }
+    try {
+        if (user._id === rest.userId) {
+            await user_1.User.updateOne({ _id: user._id }, { $push: { savedPosts: rest.postId } });
+            res.status(201).json('Post saved');
+        }
+        else {
+            res.status(401).json('Unauthorized');
+        }
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json('Error');
+    }
 });
 exports.default = postRoute;

@@ -1,32 +1,61 @@
-import express ,{  Application, Request, Response, Router } from 'express';
+import express, { Application, Request, Response, Router } from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import userRoute from './Routes/user';
 import postRoute from './Routes/post';
-const app:Application = express();
+import cookieSession from 'cookie-session';
+import cors from 'cors';
+import passport from 'passport';
+import authRoute from './Routes/auth';
+import morgan from 'morgan';
+const app: Application = express();
 app.use(express.json());
 dotenv.config();
 const routes = Router();
-app.use(routes);
+
+//CORS
+app.use(cors());
+app.use(morgan('tiny'));
+
 
 declare var process: {
     env: {
         NODE_ENV: string
         MONGO_URI: string
         JWT_SECRET_KEY: string
+        COOKIE_PRIVATE_KEY: string
+        GOOGLE_CLIENT_ID: string
+        GOOGLE_CLIENT_SECRET: string
     }
 }
+//Passport module
+require('./passport');
+
+//Cookie session
+app.use(cookieSession(
+    {
+        name: "session",
+        keys: [process.env.COOKIE_PRIVATE_KEY],
+        maxAge: 24 * 60 * 60 * 3
+    }
+));
+
+//Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 //Connect db
 try {
-      mongoose.connect(process.env.MONGO_URI);
+    mongoose.connect(process.env.MONGO_URI);
 } catch (e) {
     console.log(e)
 };
 
 //Routes
+app.use(routes);
 routes.use("/user/", userRoute);
 routes.use("/post/", postRoute);
+app.use('/auth/', authRoute)
 
 
 app.get("/", (req: Request, res: Response): void => {
