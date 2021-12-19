@@ -31,21 +31,27 @@ userRoute.post('/register', async (req: Request, res: Response) => {
 userRoute.post('/login', async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email: email });
-    const hash = user!.password;
-    try {
-        console.log(user)
-        const result = bcrypt.compareSync(password, hash);
-        if (result) {
-            const jwt_obj = {
-                _id: user?._id,
-                userName: user?.userName,
-                email: user?.email
+    console.log('This is user', user)
+    if(!user)
+    {
+        res.status(404).json({message: 'user not found'})
+    }else{
+
+        const hash = user!.password;
+        try {
+            const result = bcrypt.compareSync(password, hash);
+            if (result) {
+                const jwt_obj = {
+                    _id: user?._id,
+                    userName: user?.userName,
+                    email: user?.email
+                }
+                const accessToken = jwt.sign(jwt_obj, process.env.JWT_SECRET_KEY as string, { expiresIn: '3days' });
+                res.status(200).json({jwt:accessToken, user: user});
             }
-            const accessToken = jwt.sign(jwt_obj, process.env.JWT_SECRET_KEY as string, { expiresIn: '3days' });
-            res.status(200).json(accessToken);
+        } catch (err) {
+            res.status(500).json('Error');
         }
-    } catch (err) {
-        res.status(500).json('Error');
     }
 
 });
