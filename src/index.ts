@@ -47,6 +47,7 @@ app.use(passport.session());
 //Connect db
 try {
     mongoose.connect(process.env.MONGO_URI);
+    console.log('Database Connected')
 } catch (e) {
     console.log(e)
 };

@@ -28,10 +28,9 @@ userRoute.post('/register', async (req: Request, res: Response) => {
 });
 
 //Login
-userRoute.post('/login', async (req: Request, res: Response) => {
+userRoute.post('/sign-in', async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    const user = await User.findOne({ email: email });
-    console.log('This is user', user)
+    const user: any  = await User.findOne({ email: email });
     if(!user)
     {
         res.status(404).json({message: 'user not found'})
@@ -47,7 +46,9 @@ userRoute.post('/login', async (req: Request, res: Response) => {
                     email: user?.email
                 }
                 const accessToken = jwt.sign(jwt_obj, process.env.JWT_SECRET_KEY as string, { expiresIn: '3days' });
-                res.status(200).json({jwt:accessToken, user: user});
+                const des = {...user}._doc;                 
+                const userData = {...des, jwt:accessToken};
+                res.status(200).json(userData);
             }
         } catch (err) {
             res.status(500).json('Error');
