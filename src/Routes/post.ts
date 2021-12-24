@@ -7,6 +7,8 @@ const postRoute = Router();
 //Create a post
 postRoute.post('/create', verifyToken, async (req: Request, res: Response) => {
     const { user, ...rest } = req.body;
+   if(user)
+   {
     try {
         const post = new Post(rest);
         if (user._id === rest.userId) {
@@ -19,6 +21,9 @@ postRoute.post('/create', verifyToken, async (req: Request, res: Response) => {
     } catch (err) {
         res.status(500).json('err');
     }
+   }else {
+        res.status(401).json('Invalid token');
+   }
 });
 
 //Edit a post
@@ -113,25 +118,26 @@ postRoute.put('/comment', verifyToken, async (req: Request, res:Response)=>
 })
 
 //Get users timeline
-postRoute.get('/timeline', async (req: Request, res: Response) => {
+postRoute.get('/timeline/:id', async (req: Request, res: Response) => {
 
     const timeLinePosts = [];
-    const userId = req.body.userId;
+    const userId = req.params.id;
     const usersPost = await Post.find({ userId: userId });
     timeLinePosts.push(usersPost);
     const user = await User.findById(userId);
     const userFollowing = user?.following;
+
     
     //Loop through each user following, request their posts and push to timeline posts
     for (let i: number = 0; i < userFollowing!.length; i++) {
-        const eachUserPosts = await Post.find({ userId: userFollowing![i] });
-        if (eachUserPosts.length > 0) {
-            timeLinePosts.push(eachUserPosts);
+        const eachUsersPosts = await Post.find({ userId: userFollowing![i] });
+        if (eachUsersPosts.length > 0) {
+            timeLinePosts.push(eachUsersPosts);
         }
     }
 
     try {
-        res.status(200).json(timeLinePosts);
+        res.status(200).json(timeLinePosts[0]);
     } catch (err) {
         console.log(err);
         res.status(500).json('Error');
