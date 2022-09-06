@@ -45,17 +45,21 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 //Connect db
-try {
-    mongoose.connect(process.env.MONGO_URI);
-    console.log('Database Connected')
-} catch (e) {
-    console.log(e)
-};
+async function connect(){
+    try{
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log('Database Connected')
+    }catch(e){
+        console.log(e)
+    }
+}
+connect();
+
 
 //Routes
 app.use(routes);
-routes.use("/user/", userRoute);
-routes.use("/post/", postRoute);
+app.use("/user/", userRoute);
+app.use("/post/", postRoute);
 app.use('/auth/', authRoute)
 
 
