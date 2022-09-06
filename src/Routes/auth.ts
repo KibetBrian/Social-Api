@@ -23,7 +23,6 @@ authRoute.get('/login-success', (req, res) => {
 });
 
 authRoute.get('/logout', (req, res) => {
-    req.logout();
     res.redirect(clientHomePage);
 });
 
