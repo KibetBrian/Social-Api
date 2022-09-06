@@ -1,4 +1,4 @@
-import { Router, Request, Response} from "express";
+import { Router, Request, Response } from "express";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'
 import { verifyToken } from "../middlewares";
@@ -6,13 +6,17 @@ import { User } from "../models/user";
 const userRoute = Router();
 
 //Register new user
-userRoute.post('/register', async (req: Request, res: Response) => {
-    const plainTextPassword = req.body.password;
+userRoute.post('/v1/auth/register', async (req: Request, res: Response) => {
+    const {email, password} = req.body;
+    if (email === undefined || password === undefined) {
+        res.status(403).json("email and password required");
+    }
+    console.log(email, password)
 
     //Hash plain text password using bcrypt
     const saltRounds: number = 10;
     const salt = bcrypt.genSaltSync(saltRounds);
-    const hash = bcrypt.hashSync(plainTextPassword, salt);
+    const hash = bcrypt.hashSync(password, salt);
     req.body.password = hash;
 
     try {
@@ -28,34 +32,42 @@ userRoute.post('/register', async (req: Request, res: Response) => {
 });
 
 //Login
-userRoute.post('/sign-in', async (req: Request, res: Response) => {
-    const { email, password } = req.body;
-    const user: any  = await User.findOne({ email: email });
-    if(!user)
-    {
-        res.status(404).json({message: 'user not found'})
-    }else{
+userRoute.post('/v1/auth/login', async (req: Request, res: Response) => {
 
-        const hash = user!.password;
-        try {
-            const result = bcrypt.compareSync(password, hash);
-            if (result) {
-                const jwt_obj = {
-                    _id: user?._id,
-                    userName: user?.userName,
-                    email: user?.email
-                }
-                const accessToken = jwt.sign(jwt_obj, process.env.JWT_SECRET_KEY as string, { expiresIn: '3days' });
-                const des = {...user}._doc;                 
-                const userData = {...des, jwt:accessToken};
-                res.status(200).json(userData);
-            }
-        } catch (err) {
-            res.status(500).json('Error');
-        }
+    const { email, password, justRandom } = req.body;
+    if (email === undefined || password === undefined) {
+        res.status(403).json({message: "please enter email or password"});
     }
 
-});
+    const user: any = await User.findOne({ email: email });
+    if (!user) {
+        res.status(404).json({ message: 'user not found' });
+    }
+
+    const hash = user.password;
+    try {
+        const result = bcrypt.compareSync(password, hash);
+        if (result) {
+
+            const jwt_obj = {
+                _id: user._id,
+                userName: user.userName,
+                email: user.email
+            }
+            
+            const accessToken = jwt.sign(jwt_obj, process.env.JWT_SECRET_KEY as string, { expiresIn: '3days' });
+            const des = { ...user }._doc;
+            const userData = { ...des, jwt: accessToken }; 
+            res.status(200).json(userData);          
+        }else{
+            res.status(403).json("Invalid email or password");
+        }
+    } catch (err) {
+        res.status(500).json('Error');
+    }
+}
+
+);
 
 //Update user
 userRoute.put('/update', verifyToken, async (req: Request, res: Response) => {
