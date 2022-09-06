@@ -4,7 +4,7 @@ import passport from 'passport';
 import { User } from './models/user';
 
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID as string,
+    clientID: process.env.GOOGLE_CLIENT_SECRET as string,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     callbackURL: "http://localhost:8080/auth/google/callback"
 },
