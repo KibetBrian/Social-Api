@@ -9,17 +9,17 @@ interface post extends Document {
     shares: number
 }
 
-const PostSchema: Schema =new Schema({
+const PostSchema: Schema = new Schema({
     userId:
     {
         type: String,
         required: true
     },
-    description: 
+    description:
     {
         type: String
     },
-    image: 
+    image:
     {
         type: String
     },
@@ -35,7 +35,7 @@ const PostSchema: Schema =new Schema({
         type: Number
     }
 
-}, {timestamps:  true});
+}, { timestamps: true });
 
 export const Post: Model<post> = model('post', PostSchema);
 
