@@ -24,37 +24,40 @@ postRoute.post('/create', verifyToken, async (req: Request, res: Response) => {
     }
 });
 
-//Edit a post
 postRoute.put('/update', verifyToken, async (req: Request, res: Response) => {
     const { user, ...rest } = req.body;
+
     try {
         const post = await Post.findById(rest.postId);
+
         if (user._id === post?.userId) {
             await Post.findByIdAndUpdate(rest.postId, rest, { new: true });
             res.status(200).json('Post updated');
-        } else {
-            res.status(401).json('Unauthorized');
+            return;
         }
+
+        res.status(401).json('You are not authorized to perform this action');
     } catch (err) {
-        console.log(err);
-        res.status(500).json('Error');
+        res.status(500).json('Error occured while updating post');
     }
 });
 
 //Delete post
 postRoute.delete('/delete', verifyToken, async (req: Request, res: Response) => {
     const { user, ...rest } = req.body;
+
     try {
         const post = await Post.findById(rest.postId);
+
         if (post?.userId === user._id) {
             await Post.findOneAndDelete(rest.postId);
             res.status(200).json('Post deleted');
-        } else {
-            res.status(500).json('You are not authorized');
+            return;
         }
+
+        res.status(500).json('You are not authorized');
     } catch (err) {
-        console.log(err);
-        res.status(500).json('Error');
+        res.status(500).json('Error occured while deleting post');
     }
 });
 
@@ -71,9 +74,9 @@ postRoute.get('/find', async (req: Request, res: Response) => {
     }
 });
 
-//Add like
 postRoute.put('/like', verifyToken, async (req: Request, res: Response) => {
     const { user, ...rest } = req.body;
+
     const postId = rest.postId;
     const userId = rest.userId;
 
@@ -81,17 +84,16 @@ postRoute.put('/like', verifyToken, async (req: Request, res: Response) => {
         if (userId === user._id) {
             await Post.updateOne({ _id: postId }, { $push: { likes: userId } });
             res.status(200).json('Liked');
-        } else {
-            res.status(401).json("Unauthorized")
+            return;
         }
+
+         res.status(401).json("Unauthorized")
     }
     catch (err) {
-        console.log(err);
-        res.status(500).json('Error')
+        res.status(500).json('Error occured while perfoming like operation')
     }
 });
 
-//Comment a post
 postRoute.put('/comment', verifyToken, async (req: Request, res: Response) => {
     const { user, ...rest } = req.body;
 
@@ -99,55 +101,55 @@ postRoute.put('/comment', verifyToken, async (req: Request, res: Response) => {
         if (rest.userId === user._id) {
             await Post.updateOne({ _id: rest.postId }, { $push: { comments: { userId: user._id, comment: rest.comment } } });
             res.status(200).json('Comment posted')
-        } else {
-            res.status(401).json('Unauthorized');
+            return;
         }
+        res.status(401).json('Unauthorized');
+
     } catch (err) {
-        console.log(err);
-        res.status(500).json('Error');
+        res.status(500).json('Error occured while posting comment');
     }
 })
 
-//Get users timeline
 postRoute.get('/timeline/:id', async (req: Request, res: Response) => {
 
-    const timeLinePosts = [];
+    const timeLinePosts:any = [];
     const userId = req.params.id;
     const usersPost = await Post.find({ userId: userId });
-    timeLinePosts.push(usersPost);
-    const user = await User.findById(userId);
-    const userFollowing = user?.following;
 
+    timeLinePosts.concat(usersPost);
+
+    const user = await User.findById(userId);
+    if (!user){
+        res.status(404).json('User data not found');
+        return;
+    }
+    const userFollowing = user.following;
 
     //Loop through each user following, request their posts and push to timeline posts
-    for (let i: number = 0; i < userFollowing!.length; i++) {
+    for (let i: number = 0; i < userFollowing.length; i++) {
         const eachUsersPosts = await Post.find({ userId: userFollowing![i] });
+
         if (eachUsersPosts.length > 0) {
-            timeLinePosts.push(eachUsersPosts);
+            timeLinePosts.concat(eachUsersPosts);
         }
+
     }
 
-    try {
-        res.status(200).json(timeLinePosts[0]);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json('Error');
-    }
+    res.status(200).json(timeLinePosts);
 });
 
-//Save a post
 postRoute.put('/save', verifyToken, async (req: Request, res: Response) => {
     const { user, ...rest } = req.body;
+
     try {
         if (user._id === rest.userId) {
             await User.updateOne({ _id: user._id }, { $push: { savedPosts: rest.postId } });
             res.status(201).json('Post saved');
-        } else {
-            res.status(401).json('Unauthorized');
+            return;
         }
+        res.status(401).json('You are not allowed to perform this action');
     } catch (err) {
-        console.log(err);
-        res.status(500).json('Error');
+        res.status(500).json('Error occured while saving post');
     }
 })
 
