@@ -10,13 +10,13 @@ This is a RESTful backend application for a typical social media application. It
 
 ## Steps to run the application
 
-Create a .env file similar to sample.env
-
 ### Clone the application
 ```
 git clone git@github.com:KibetBrian/Social-media-node-typescript-api.git
 
 ```
+### Create a .env file similar to sample.env
+
 
 ### Run the application
 
