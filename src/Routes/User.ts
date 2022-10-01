@@ -16,7 +16,7 @@ userRoute.post("/register", async (req: Request, res: Response) => {
     }
 
     //Hash user password
-    const hashedPassword =  await HashPassword(password)
+    const hashedPassword = await HashPassword(password)
 
     try {
 
@@ -32,10 +32,10 @@ userRoute.post("/register", async (req: Request, res: Response) => {
         }
 
         const user = new User({ userName, email, password: hashedPassword });
-        const savedUser:any = await user.save()
-        const {password, ...rest} = savedUser._doc;
+        const savedUser: any = await user.save()
+        const { password, ...rest } = savedUser._doc;
 
-        res.status(200).json({"userData": rest})
+        res.status(200).json({ "userData": rest })
 
     } catch (e) {
 
@@ -43,35 +43,37 @@ userRoute.post("/register", async (req: Request, res: Response) => {
     }
 });
 
-
-//Update user
 userRoute.put('/update', verifyToken, async (req: Request, res: Response) => {
     const userObj = req.body.user;
     const { user, ...rest } = req.body;
+
     try {
         const user = await User.findOneAndUpdate({ _id: userObj._id }, rest, { new: true });
         res.status(200).json(user);
     }
     catch (err) {
-        res.status(500).json('Error');
+        res.status(500).json('Error occured while updating user');
     }
+
 });
 
-//Delete user
 userRoute.delete('/delete', verifyToken, async (req: Request, res: Response) => {
     const userObj = req.body.user;
+
     try {
         const deleted = await User.findByIdAndDelete(userObj._id);
+
         res.status(200).json(deleted);
     } catch (err) {
-        res.status(500).json('Error');
+        res.status(500).json('Error deleting user');
     }
+
 });
 
-//Find user
 userRoute.get('/find', async (req: Request, res: Response) => {
     const params = req.body.username;
     const regex = new RegExp(params, 'i');
+
     try {
         const results = await User.find({ userName: { $regex: regex } });
         res.status(200).json(results);
@@ -79,35 +81,41 @@ userRoute.get('/find', async (req: Request, res: Response) => {
     catch (err) {
         res.status(500).json('Error');
     }
+
 });
 
-//Follow a user
 userRoute.put('/follow', verifyToken, async (req: Request, res: Response) => {
     const { user, ...rest } = req.body;
     const toFollowId = rest.toFollowId;
     const u = await User.findById(user._id);
+
+    if (toFollowId == user._id) {
+        res.status(403).json('You cannot follow yourself')
+        return;
+    }
+    if (!u) {
+        res.status(404).json('User not found');
+        return;
+    }
+
     let followed: boolean = false;
 
-    //Check in the following id user is already followed
-    for (let i = 0; i < u!.following.length; i++) {
-        if (u!.following[i] === toFollowId) {
+    for (let i = 0; i < u.following.length; i++) {
+        if (u.following[i] === toFollowId) {
             followed = true;
         }
     }
-
     try {
-        if (toFollowId !== user._id && !followed) {
+        if (!followed) {
             await User.updateOne({ _id: user._id }, { $push: { following: toFollowId } });
-            res.status(200).json(`Followed ${toFollowId}`);
-        } else if (toFollowId == user._id) {
-            res.status(403).json('You cannot follow yourself')
-        } else {
-            res.status(403).json('User already followed');
+            res.status(200).json("User followed");
+            return
         }
+        await User.updateOne({ _id: user._id }, { $pull: { following: toFollowId } });
+        res.status(403).json('User unfollowed');
     }
     catch (err) {
-        console.log(err);
-        res.status(500).json('Err');
+        res.status(500).json('Error while updating following preference');
     }
 })
 
