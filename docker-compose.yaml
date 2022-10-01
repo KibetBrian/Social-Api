@@ -1,0 +1,19 @@
+version: '3'
+services:
+  application:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - 8080:8080
+    volumes:
+      - ./: /app
+    depends_on:
+      - mongodb
+    links:
+      - mongodb
+  mongodb:
+    image: mongo:4.2.22
+    ports:
+      - 12027:12027
+  
