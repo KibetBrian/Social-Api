@@ -1,26 +1,18 @@
 import express, { Application, Request, Response, Router } from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import userRoute from './Routes/user';
-import postRoute from './Routes/post';
+import userRoute from './Routes/User';
+import postRoute from './Routes/Post';
 import cookieSession from 'cookie-session';
 import cors from 'cors';
-import passport from 'passport';
-import authRoute from './Routes/auth';
+import passport, { session } from 'passport';
+import authRoute from './Routes/Auth';
 import morgan from 'morgan';
-const app: Application = express();
-app.use(express.json());
-dotenv.config();
-const routes = Router();
-
-//CORS
-app.use(cors());
-app.use(morgan('tiny'));
-
 
 declare var process: {
     env: {
         NODE_ENV: string
+        PORT: string
         MONGO_URI: string
         JWT_SECRET_KEY: string
         COOKIE_PRIVATE_KEY: string
@@ -28,10 +20,19 @@ declare var process: {
         GOOGLE_CLIENT_SECRET: string
     }
 }
-//Passport module
+
+const app: Application = express();
+const port = process.env.PORT || 8081
+const routes = Router();
+
+dotenv.config();
 require('./passport');
 
-//Cookie session
+app.use(cors());
+app.use(morgan('tiny'));
+app.use(express.json());
+app.use(passport.initialize());
+
 app.use(cookieSession(
     {
         name: "session",
@@ -39,33 +40,23 @@ app.use(cookieSession(
         maxAge: 24 * 60 * 60 * 3
     }
 ));
-
-//Passport
-app.use(passport.initialize());
 app.use(passport.session());
 
 //Connect db
-async function connect(){
-    try{
+const ConnectDb = async ()=> {
+    try {
         await mongoose.connect(process.env.MONGO_URI);
         console.log('Database Connected')
-    }catch(e){
+    } catch (e) {
         console.log(e)
     }
 }
-connect();
-
+ConnectDb();
 
 //Routes
 app.use(routes);
-app.use("/user/", userRoute);
-app.use("/post/", postRoute);
-app.use('/auth/', authRoute)
+app.use("/api/v1/user", userRoute);
+app.use("/api/v1/post", postRoute);
+app.use('/api/v1/auth', authRoute);
 
-
-app.get("/", (req: Request, res: Response): void => {
-    res.status(200).json("Test Successful!");
-});
-
-
-app.listen(8080, (): void => console.log("Server Running..."));
+app.listen(port, (): void => console.log("Server Running at port " + port));
