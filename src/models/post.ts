@@ -1,6 +1,6 @@
 import { model, Schema, Model, Document } from "mongoose";
 
-interface post extends Document {
+interface IPost extends Document {
     userId: string
     description: String
     image: String
@@ -37,5 +37,5 @@ const PostSchema: Schema = new Schema({
 
 }, { timestamps: true });
 
-export const Post: Model<post> = model('post', PostSchema);
+export const Post =model<IPost>('post', PostSchema);
 
