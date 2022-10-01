@@ -5,7 +5,7 @@ This is a RESTful backend application for a typical social media application. It
 
 ### Requirements
 
-- Node.js version 16.*.* or higher
+- Node.js version 16 or higher
 - Docker
 
 ## Steps to run the application
