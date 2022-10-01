@@ -1,5 +1,9 @@
 version: '3'
 services:
+  mongodb:
+    image: mongo:4.2.22
+    ports:
+      - 27017:27017
   application:
     build: .
     env_file:
@@ -10,8 +14,4 @@ services:
       - mongodb
     links:
       - mongodb
-  mongodb:
-    image: mongo:4.2.22
-    ports:
-      - 12027:12027
   
