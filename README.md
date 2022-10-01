@@ -15,7 +15,7 @@ This is a RESTful backend application for a typical social media application. It
 git clone git@github.com:KibetBrian/Social-media-node-typescript-api.git
 
 ```
-### Create a .env file similar to sample.env
+### CD into the app and create a .env file similar to sample.env
 ```
 GOOGLE_CLIENT_ID=Your OAuth 2.0 client id from the Google
 GOOGLE_CLIENT_SECRET=Your OAuth 2.0 client secret from the Google
@@ -28,7 +28,7 @@ MONGO_URI=mongodb://localhost:27017
 ### Run the application
 
 ```
-cd Social-media-node-typescript-api && docker compose up
+Social-media-node-typescript-api && docker compose up
 
 ```
 
