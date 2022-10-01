@@ -7,7 +7,7 @@ It uses mongdb for data persistence.
 ### Requirements
 
 - Node.js version 16 or higher
-- Docker
+- Docker and Docker Compose
 
 ## Steps to run the application
 
