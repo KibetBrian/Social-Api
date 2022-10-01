@@ -1,5 +1,6 @@
 ### Social Media API
 This is a RESTful backend application for a typical social media application. It supports a variety of user activities such as account creation, making posts, updating accounts etc.
+It users mongdb for data persistence.
 
 ## Local Setup
 
